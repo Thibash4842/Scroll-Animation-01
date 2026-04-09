@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motto Style | Slot-In Reveal</title>
+  <!-- Google Fonts - Inter for a premium look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --text-color: #0a0a0a;
+      --bg-color: #ffffff;
+      --border-radius: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html.lenis {
+      height: auto;
+    }
+
+    .lenis-smooth {
+      scroll-behavior: auto !important;
+    }
+
+    .lenis-smooth [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+
+    .lenis-stopped {
+      overflow: hidden;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    section {
+      position: relative;
+      width: 100%;
+    }
+
+    /* Scroll Section */
+    .scroll-slot {
+      height: 400vh; /* Scroll distance */
+      position: relative;
+    }
+
+    .sticky-wrapper {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Slot Layout */
+    .content-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      transform: scale(0.8);
+      opacity: 0;
+      width: 100%;
+    }
+
+    .text-content {
+      font-size: clamp(40px, 15vw, 220px); /* Fluid typography */
+      font-weight: 900;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+
+    .video-container {
+      position: relative;
+      width: 0;
+      height: 12vw;
+      min-height: 80px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      transform-origin: center center;
+      opacity: 0;
+      z-index: 5;
+    }
+
+    /* Responsive adjustments for Video Height */
+    @media (max-width: 1024px) {
+      .video-container {
+        height: 18vw;
+        min-height: 120px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .video-container {
+        height: 40vw; /* Taller on mobile for impact */
+        min-height: 160px;
+        --border-radius: 12px;
+        order: -1; /* Video on top */
+      }
+      .content-wrapper {
+        flex-direction: column;
+        gap: 3vh; /* Vertical gap */
+        transform: scale(1);
+      }
+      .text-content {
+        font-size: clamp(40px, 12vw, 80px); /* Slightly smaller on mobile to fit screen */
+        text-align: center;
+      }
+    }
+
+    .video-container video {
+      width: 100%; /* Ensure video is wide enough */
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="scroll-slot" id="scrollTriggerSection">
+    <div class="sticky-wrapper">
+      <div class="content-wrapper" id="contentWrapper">
+        <div class="text-content" id="textLeft">DIW</div>
+        
+        <div class="video-container" id="videoBox">
+          <video src="./assets/285203_medium.mp4" autoplay loop muted playsinline id="mainVideo"></video>
+        </div>
+        
+        <div class="text-content" id="textRight">ORA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+
+  <script>
+    // Initialize Lenis Smooth Scroll
+    const lenis = new Lenis();
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
+    // Register ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    let mm = gsap.matchMedia();
+
+    // -------------------------------------------------------------
+    // DESKTOP & TABLET ANIMATION (Horizontal Split)
+    // -------------------------------------------------------------
+    mm.add("(min-width: 769px)", () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#scrollTriggerSection",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1,
+        }
+      });
+
+      tl.to("#contentWrapper", { opacity: 1, scale: 1, duration: 1 }, 0);
+
+      tl.to("#videoBox", {
+        width: "20vw",
+        opacity: 1,
+        margin: "0 2vw",
+        duration: 2,
+        ease: "power2.inOut"
+      }, 0.5);
+
+      tl.to("#videoBox", { width: "40vw", duration: 1.5, ease: "power2.inOut" }, 2.5);
+      tl.to("#videoBox", { width: "25vw", duration: 1, ease: "power2.inOut" }, 4);
+
+      tl.fromTo("#mainVideo", { scale: 1.4 }, { scale: 1, duration: 5, ease: "none" }, 0);
+    });
+
+    // -------------------------------------------------------------
+    // MOBILE ANIMATION (Vertical Stack: Video First, then Text)
+    // -------------------------------------------------------------
+    mm.add("(max-width: 768px)", () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#scrollTriggerSection",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1,
+        }
+      });
+
+      // 1. Initially reveal content wrapper
+      tl.to("#contentWrapper", { opacity: 1, duration: 0.5 }, 0);
+
+      // 2. Reveal and expand Video first (at the top)
+      tl.to("#videoBox", {
+        width: "60vw",
+        height: "40vw",
+        opacity: 1,
+        duration: 2,
+        ease: "power2.out"
+      }, 0.2);
+
+      // 3. Reveal the Text below the video
+      tl.from("#textLeft, #textRight", {
+        y: 50,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 1.5,
+        ease: "power2.out"
+      }, 1.5);
+
+      // 4. Subtle pulse for video
+      tl.to("#videoBox", {
+        width: "70vw",
+        height: "45vw",
+        duration: 1,
+        ease: "power2.inOut"
+      }, 2.5);
+
+      tl.to("#videoBox", {
+        width: "65vw",
+        height: "42vw",
+        duration: 1,
+        ease: "power2.inOut"
+      }, 3.5);
+
+      tl.fromTo("#mainVideo", { scale: 1.2 }, { scale: 1, duration: 5, ease: "none" }, 0);
+    });
+
+  </script>
+</body>
+
+</html>
+
+
